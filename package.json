@@ -1,0 +1,12 @@
+{
+  "name": "res-usus",
+  "version": "1.0.0",
+  "description": "",
+  "main": "report.js",
+  "author": "matthias.luebken@instana.com",
+  "dependencies": {
+    "moment": "^2.29.1",
+    "moment-duration-format": "^2.3.2",
+    "request": "^2.88.2"
+  }
+}
