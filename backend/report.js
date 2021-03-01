@@ -20,7 +20,7 @@ const api_url = process.argv[3]
 
 // --- Build Request ---
 
-function buildRequestOptions(groupBy, metrics, type) {
+function buildRequestOptions(groupBy, filterBy, metrics, type) {
     const body = {
         "timeFrame": {
             "to": timeframe_to,
@@ -29,8 +29,8 @@ function buildRequestOptions(groupBy, metrics, type) {
         "type": type,
         "tagFilterExpression": {
             "type": "TAG_FILTER",
-            "name": "kubernetes.cluster.name",
-            "value": k8s_cluster,
+            "name": filterBy.name,
+            "value": filterBy.value,
             "operator": "EQUALS"
         },
         "groupBy": [groupBy.groupByKey],
@@ -65,9 +65,9 @@ function buildMetrics(specs) {
 
 // --- Request ---
 
-function requestReport(groupBy, metrics, type, callback) {
+function requestReport(groupBy, filterBy, metrics, type, callback) {
 
-    const options = buildRequestOptions(groupBy, metrics, type)
+    const options = buildRequestOptions(groupBy, filterBy, metrics, type)
 
     request.post(options, function (error, response, body) {
         if (error) console.error('error:', error);
@@ -103,16 +103,14 @@ http.createServer(function (req, res) {
     var dockerMemoryMetrics = { type: "docker", metric: "memory.usage", aggregations: ["MEAN", "P95", "P99", "MAX"] }
 
     var groupByNamespace = { groupByKey: "kubernetes.namespace.name", groupByLabel: "Namespace" }
+    var filterByCluster = { name: "kubernetes.cluster.name", value: k8s_cluster }
     // TODO parameterize group by
     //TODO var groupByLabel = { groupByKey: "kubernetes.pod.label", groupByLabel: "Pod Label" }
 
-    requestReport(groupByNamespace, [dockerCpuMetrics, dockerMemoryMetrics], "docker", function (report1) {
-        // TODO  requestReport(groupByLabel, [dockerCpuMetrics, dockerMemoryMetrics], function (report2) {
+    requestReport(groupByNamespace, filterByCluster, [dockerCpuMetrics, dockerMemoryMetrics], "docker", function (report1) {
         res.setHeader('Content-Type', 'application/json');
         res.write(JSON.stringify(report1))
-        //TODO res.write(report2)
         res.end()
-        //})
     })
 }).listen(8080);
 
