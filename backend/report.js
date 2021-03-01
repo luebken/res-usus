@@ -41,7 +41,7 @@ function buildRequestOptions(groupBy, metrics, type) {
     }
 
     const options = {
-        url: api_url + 'infrastructure-monitoring/explore/groups',
+        url: api_url + '/api/infrastructure-monitoring/explore/groups',
         headers: {
             'authorization': 'apiToken ' + api_token,
             'content-type': 'application/json'

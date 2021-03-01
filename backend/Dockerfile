@@ -4,4 +4,4 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 EXPOSE 8080
-CMD [ "node", "report.js", "do-mdl-k8s-cluster", "https://test-instana.pink.instana.rocks/api/" ]
+ENTRYPOINT [ "node", "report.js"]
