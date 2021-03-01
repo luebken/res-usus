@@ -5,7 +5,7 @@ require("moment-duration-format");
 
 const hour = 1000 * 60 * 60
 const day = hour * 24
-const timeframe_windowsize = hour * 12 //TODO test with a full day
+const timeframe_windowsize = day
 const timeframe_to = Date.now()
 
 // Check Env & CLI
@@ -118,8 +118,6 @@ http.createServer(function (req, res) {
 
 
 
-
-
 // --- Build Report ---
 
 function buildReport(data, groupBy) {
@@ -153,13 +151,14 @@ function buildReport(data, groupBy) {
 }
 
 function metricStringPercent(metrics, metricKey, label) {
-    if (metrics[metricKey]) { // TODO for each metric not just [0][1]
+    // should alwyways be metrics[metricKey].length == 1
+    if (metrics[metricKey]) {
         return (metrics[metricKey][0][1] * 100).toFixed(2) + "%";
     }
 }
 
 function metricStringByte(metrics, metricKey, label) {
-    if (metrics[metricKey]) { // TODO for each metric not just [0][1]
+    if (metrics[metricKey]) {
         return (metrics[metricKey][0][1] / 1024 / 1024).toFixed(2) + "MB";
     }
 }
