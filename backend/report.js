@@ -7,7 +7,6 @@ const hour = 1000 * 60 * 60
 const day = hour * 24
 const timeframe_windowsize = hour * 12 //TODO test with a full day
 const timeframe_to = Date.now()
-const granularity = hour * 12
 
 // Check Env & CLI
 const api_token = process.env.INSTANA_API_TOKEN
@@ -19,17 +18,15 @@ const k8s_cluster = process.argv[2]
 const api_url = process.argv[3]
 
 
-
-
 // --- Build Request ---
 
-function buildRequestOptions(groupBy, metrics) {
+function buildRequestOptions(groupBy, metrics, type) {
     const body = {
         "timeFrame": {
             "to": timeframe_to,
             "windowSize": timeframe_windowsize
         },
-        "type": metrics.type,
+        "type": type,
         "tagFilterExpression": {
             "type": "TAG_FILTER",
             "name": "kubernetes.cluster.name",
@@ -58,7 +55,7 @@ function buildMetrics(specs) {
     var result = [];
     specs.forEach(spec => {
         spec.aggregations.forEach(aggregation => {
-            result.unshift({ "metric": spec.metric, "aggregation": aggregation, "granularity": spec.granularity })
+            result.unshift({ "metric": spec.metric, "aggregation": aggregation })
         })
     });
     return result;
@@ -68,9 +65,9 @@ function buildMetrics(specs) {
 
 // --- Request ---
 
-function requestReport(groupBy, metrics, callback) {
+function requestReport(groupBy, metrics, type, callback) {
 
-    const options = buildRequestOptions(groupBy, metrics)
+    const options = buildRequestOptions(groupBy, metrics, type)
 
     request.post(options, function (error, response, body) {
         if (error) console.error('error:', error);
@@ -102,14 +99,14 @@ http.createServer(function (req, res) {
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
 
-    var dockerCpuMetrics = { type: "docker", granularity: granularity, metric: "cpu.total_usage", aggregations: ["MEAN", "P95", "P99", "MAX"] }
-    var dockerMemoryMetrics = { type: "docker", granularity: granularity, metric: "memory.usage", aggregations: ["MEAN", "P95", "P99", "MAX"] }
+    var dockerCpuMetrics = { type: "docker", metric: "cpu.total_usage", aggregations: ["MEAN", "P95", "P99", "MAX"] }
+    var dockerMemoryMetrics = { type: "docker", metric: "memory.usage", aggregations: ["MEAN", "P95", "P99", "MAX"] }
 
     var groupByNamespace = { groupByKey: "kubernetes.namespace.name", groupByLabel: "Namespace" }
     // TODO parameterize group by
     //TODO var groupByLabel = { groupByKey: "kubernetes.pod.label", groupByLabel: "Pod Label" }
 
-    requestReport(groupByNamespace, [dockerCpuMetrics, dockerMemoryMetrics], function (report1) {
+    requestReport(groupByNamespace, [dockerCpuMetrics, dockerMemoryMetrics], "docker", function (report1) {
         // TODO  requestReport(groupByLabel, [dockerCpuMetrics, dockerMemoryMetrics], function (report2) {
         res.setHeader('Content-Type', 'application/json');
         res.write(JSON.stringify(report1))
@@ -139,16 +136,16 @@ function buildReport(data, groupBy) {
         lineitem.count = item.count
         lineitem.cpu = {}
         lineitem.cpu.total_usage = {}
-        lineitem.cpu.total_usage.mean = metricStringPercent(item.metrics, "cpu.total_usage.MEAN." + timeframe_windowsize)
-        lineitem.cpu.total_usage.p95 = metricStringPercent(item.metrics, "cpu.total_usage.P95." + timeframe_windowsize)
-        lineitem.cpu.total_usage.p99 = metricStringPercent(item.metrics, "cpu.total_usage.P99." + timeframe_windowsize)
-        lineitem.cpu.total_usage.max = metricStringPercent(item.metrics, "cpu.total_usage.MAX." + timeframe_windowsize)
+        lineitem.cpu.total_usage.mean = metricStringPercent(item.metrics, "cpu.total_usage.MEAN")
+        lineitem.cpu.total_usage.p95 = metricStringPercent(item.metrics, "cpu.total_usage.P95")
+        lineitem.cpu.total_usage.p99 = metricStringPercent(item.metrics, "cpu.total_usage.P99")
+        lineitem.cpu.total_usage.max = metricStringPercent(item.metrics, "cpu.total_usage.MAX")
         lineitem.memory = {}
         lineitem.memory.usage = {}
-        lineitem.memory.usage.mean = metricStringByte(item.metrics, "memory.usage.MEAN." + timeframe_windowsize)
-        lineitem.memory.usage.p95 = metricStringByte(item.metrics, "memory.usage.P95." + timeframe_windowsize)
-        lineitem.memory.usage.p99 = metricStringByte(item.metrics, "memory.usage.P99." + timeframe_windowsize)
-        lineitem.memory.usage.max = metricStringByte(item.metrics, "memory.usage.MAX." + timeframe_windowsize)
+        lineitem.memory.usage.mean = metricStringByte(item.metrics, "memory.usage.MEAN")
+        lineitem.memory.usage.p95 = metricStringByte(item.metrics, "memory.usage.P95")
+        lineitem.memory.usage.p99 = metricStringByte(item.metrics, "memory.usage.P99")
+        lineitem.memory.usage.max = metricStringByte(item.metrics, "memory.usage.MAX")
 
         report.data.unshift(lineitem)
     });
