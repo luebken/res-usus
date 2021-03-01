@@ -5,7 +5,7 @@ require("moment-duration-format");
 
 const hour = 1000 * 60 * 60
 const day = hour * 24
-const timeframe_windowsize = day
+const timeframe_windowsize = day * 7 
 const timeframe_to = Date.now()
 
 // Check Env & CLI
