@@ -27,7 +27,7 @@ curl --request POST \
 --header "authorization: apiToken $INSTANA_API_TOKEN" \
 --header 'content-type: application/json' \
 --data '{
-    "timeFrame":{"to":1616574699723,"windowSize":604800000},
+    "timeFrame":{"to":1616584737260,"windowSize":604800000},
     "type":"docker",
     "tagFilterExpression":{
         "type":"TAG_FILTER",
@@ -55,5 +55,5 @@ Currently the easiest way to determine values for the different is by creating a
 * `groupBy` expects a single value
 * Possible values for `metric aggregations` are: MAX, MEAN, MAX, MIN, SUM, P25, P50, P75, P90, P95, P98, P99
 * The window size of 604800000 in the example above is a week: 1000 * 60 * 60 * 24 * 7 
-* `timeFrame.to` is specified as in milliseconds from epoch
+* `timeFrame.to` is specified as in milliseconds from epoch. In Unix try something like `$ date +%s%N | cut -b1-13`
 * Each metric returns a single value over the whole time frame. By specifying a `granularity` in milliseconds the API returns a time series. e.g. for an hour long bucket add `"granularity": "3600000"` to the metric definition. The lowest bucket size is 10000.
