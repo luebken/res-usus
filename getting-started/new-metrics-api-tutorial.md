@@ -37,7 +37,7 @@ curl --request POST \
     },
     "groupBy":["kubernetes.namespace.name"],
     "metrics":[
-        {"metric":"cpu.total_usage","aggregation":"P99", "granularity": "3600000"}
+        {"metric":"cpu.total_usage","aggregation":"P99"}
     ],
     "pagination":{"retrievalSize":200}
     }' | jq .data
@@ -54,4 +54,6 @@ Currently the easiest way to determine values for the different is by creating a
 
 * `groupBy` expects a single value
 * Possible values for `metric aggregations` are: MAX, MEAN, MAX, MIN, SUM, P25, P50, P75, P90, P95, P98, P99
-* Per default each metric returns a single value over the whole time frame. By specifying a `granularity` in seconds the API returns a time series. 
+* The window size of 604800000 in the example above is a week: 1000 * 60 * 60 * 24 * 7 
+* `timeFrame.to` is specified as in milliseconds from epoch
+* Each metric returns a single value over the whole time frame. By specifying a `granularity` in milliseconds the API returns a time series. e.g. for an hour long bucket add `"granularity": "3600000"` to the metric definition. The lowest bucket size is 10000.
